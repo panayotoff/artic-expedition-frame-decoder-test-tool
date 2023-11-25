@@ -24,6 +24,7 @@ import {
   Snackbar,
   AlertTitle,
   styled,
+  Typography,
 } from "@mui/material";
 import { SensoryData, FrameDecoder } from "./helpers/helpers";
 
@@ -221,7 +222,12 @@ function App() {
                         <TableCell component="th" scope="row">
                           {key}
                         </TableCell>
-                        <TableCell align="left">{value}</TableCell>
+                        <TableCell align="left">
+                          {value}
+                          {key.includes("timestamp") && (
+                            <Typography ml={3} variant="overline">({new Date(value * 1000).toISOString()})</Typography>
+                          )}
+                        </TableCell>
                         {/** eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                         <TableCell align="right">
                           {availableSensors[key as keyof typeof availableSensors]?.comment}
