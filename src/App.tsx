@@ -23,6 +23,7 @@ import {
   Alert,
   Snackbar,
   AlertTitle,
+  styled,
 } from "@mui/material";
 import { SensoryData, FrameDecoder } from "./helpers/helpers";
 
@@ -123,6 +124,10 @@ const messagesOrder = [
   "GPSsats",
 ];
 
+const ScrollableStack = styled(Stack)`
+  overflow-x: auto;
+`;
+
 function App() {
   const [hexString, setHexString] = useState("0b8cfe630e70fe63282d44fc34e866fcb0021c1268260a030c");
   const [showConfig, setShowConfig] = useState(false);
@@ -155,7 +160,7 @@ function App() {
     <>
       <Container maxWidth={"lg"}>
         <Box mt={3} pb={4}>
-          <Stack direction="row" spacing={1}>
+          <ScrollableStack direction="row" spacing={1} useFlexGap>
             <Button variant="outlined" onClick={() => setShowConfig(true)}>
               Show Configuration
             </Button>
@@ -169,11 +174,11 @@ function App() {
             <Button variant="outlined" color="secondary" onClick={() => setShowSampleData(true)}>
               Sample data
             </Button>
-          </Stack>
+          </ScrollableStack>
         </Box>
         <Collapse in={showDataOrder}>
           <Box>
-            <Stack direction="row" spacing={1}>
+            <ScrollableStack direction="row" spacing={1}>
               {messagesOrder.map((name, index) => (
                 <Chip
                   label={name}
@@ -182,7 +187,7 @@ function App() {
                   onClick={() => setOpenChipConfig(name)}
                 ></Chip>
               ))}
-            </Stack>
+            </ScrollableStack>
           </Box>
         </Collapse>
         <Box mt={4}>
