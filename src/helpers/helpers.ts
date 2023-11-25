@@ -8,8 +8,8 @@ const cTypes = {
     'float': { 'size': 4 },
     'double': { 'size': 8 },
     'char': { 'size': 1 },
-    'hex': { 'size': 1 }
-    // 'enum': { 'size': 1 },
+    'hex': { 'size': 1 },
+    'enum': { 'size': 1 },
 }
 
 export type CType = keyof typeof cTypes;
@@ -23,6 +23,9 @@ export type SensoryData = {
      * Encoded data type
      */
     type: CType,
+    /**
+     * Normalize data
+     */
     conversion?: {
         /**
          * Human-readable
@@ -37,13 +40,9 @@ export type SensoryData = {
          */
         coeffs?: number[],
         /**
-         * TODO: Enum types
+         * Enum types
          */
-        enum?: Record<string | number, string>,
-        /**
-         * TODO: Bitmap types
-         */
-        bitmap?: Record<string | number, string>,
+        enum?: Record<number, string>,
         /**
          * Precision
          * TODO
@@ -82,8 +81,6 @@ export class FrameDecoder {
         const bytesFromHex = inputStringHex.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16));
         const buffer = new Uint8Array(bytesFromHex).buffer;
         const view = new DataView(buffer);
-        // Return object
-        // TODO: more then numbers
         const dataObject: Record<string, number | string> = {};
         // Read offset
         let bytesOffset = 0;
@@ -91,7 +88,7 @@ export class FrameDecoder {
         for (const sensorName of this.sensorsOrder) {
             const sensorConfig: SensoryData = this.availableSensors[sensorName];
             if (!sensorConfig) {
-                console.error(`Sensor ${sensorName} was not found in the config ${this.availableSensors}`);
+                throw new Error(`Sensor ${sensorName} was not found in the config ${this.availableSensors}`)
             }
             const dataSizeInBytes = cTypes[sensorConfig.type].size;
             const littleEndian = !sensorConfig.bigEndian;
@@ -121,6 +118,13 @@ export class FrameDecoder {
                 const partialDataView = new DataView(view.buffer, bytesOffset, dataSizeInBytes);
                 const partialByteArray = new Uint8Array(partialDataView.buffer);
                 value = Array.from(partialByteArray, byte => byte.toString(16).padStart(2, '0')).join('')
+            } else if (sensorConfig.type === 'enum') {
+                const enumKey = view.getUint8(bytesOffset);
+                if (sensorConfig?.conversion?.enum && sensorConfig.conversion.enum[enumKey]) {
+                    value = sensorConfig.conversion.enum[enumKey];
+                } else {
+                    throw new Error(`Enum ${enumKey} not found in config ${sensorConfig}`);
+                }
             }
 
             /**
@@ -135,10 +139,10 @@ export class FrameDecoder {
                 }
                 value = y;
             }
-            if (value) {
+            if (value !== null) {
                 dataObject[sensorName] = value;
             } else {
-                console.warn(`Unable to parse ${sensorName}`);
+                throw new Error(`Unable to parse ${sensorName}`);
             }
             bytesOffset += dataSizeInBytes;
         }

@@ -26,6 +26,8 @@ import {
 } from "@mui/material";
 import { SensoryData, FrameDecoder } from "./helpers/helpers";
 
+const latLngScaleFactor = 1e-6;
+
 export const availableSensors = {
   RTCtimestamp: {
     name: "RTCtimestamp",
@@ -41,11 +43,21 @@ export const availableSensors = {
     name: "GPSlat",
     type: "int32_t",
     comment: "GPS latitude",
+    conversion: {
+      decoded_units: "100000/1 lat true",
+      encoded_units: "lat true",
+      coeffs: [0, latLngScaleFactor],
+    },
   },
   GPSlng: {
     name: "GPSlng",
     type: "int32_t",
     comment: "GPS longitude",
+    conversion: {
+      decoded_units: "100000/1 lng true",
+      encoded_units: "lng true",
+      coeffs: [0, latLngScaleFactor],
+    },
   },
   temperature: {
     name: "temperature",
